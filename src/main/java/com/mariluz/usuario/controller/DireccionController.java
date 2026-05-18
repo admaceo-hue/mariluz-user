@@ -23,7 +23,7 @@ public class DireccionController {
     private DireccionService direccionService;
 
     
-    @PostMapping("/agregar_dir")
+    @PostMapping("/direccion")
     public ResponseEntity<DireccionResponse> agregarDireccion(@Valid @RequestBody DireccionRequest request) {
         // Llama al service para guardar y obtener la respuesta
         DireccionResponse response = direccionService.creaDireccion(request);

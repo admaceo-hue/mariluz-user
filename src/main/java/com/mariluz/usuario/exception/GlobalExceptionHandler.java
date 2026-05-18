@@ -6,9 +6,12 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -54,5 +57,27 @@ public class GlobalExceptionHandler {
                 .build();
                 
         return new ResponseEntity<>(response, status);
+
+
+
+        
+    }
+    // Validacion Parseo del json
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleJsonParseError(
+        HttpMessageNotReadableException ex,
+        HttpServletRequest request
+    ) {
+        Map<String, String> error = Map.of(
+            "error",
+            "Revise el formato de los campos enviados."
+        );
+
+        return buildErrorResponse(
+            HttpStatus.BAD_REQUEST,
+            "Error en la solicitud",
+            "Datos inválidos",
+            error
+        );
     }
 }

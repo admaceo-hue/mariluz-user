@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.mariluz.usuario.dto.crear_direcion.DireccionRequest;
 import com.mariluz.usuario.dto.crear_direcion.DireccionResponse;
-import com.mariluz.usuario.exception.UnauthorizedOperationException;
+import com.mariluz.usuario.exception.ResourceNotFoundException;
+import com.mariluz.usuario.exception.UnauthorizedOperationException; // <-- Importamos el error 404
 import com.mariluz.usuario.model.Direccion;
 import com.mariluz.usuario.model.User;
 import com.mariluz.usuario.repository.DireccionRepository;
@@ -29,6 +30,13 @@ public class DireccionService {
     public DireccionResponse creaDireccion(DireccionRequest request) {
         User currentUser = getCurrentUser();
         
+        // 1. Validamos si el usuario ya cuenta con una dirección registrada(para evitar duplicados)
+        Direccion direccionExistente = repo.findByUsuarioId(currentUser.getId());
+        if (direccionExistente != null) {
+            // Si ya existe, lanzamos la excepción para bloquear el flujo y no duplicar datos
+            throw new UnauthorizedOperationException("El usuario ya tiene una dirección registrada. No puede crear otra.");
+        }
+        
         Direccion nuevaDireccion = Direccion.builder()
                 .region(request.getRegion())
                 .comuna(request.getComuna())
@@ -47,8 +55,9 @@ public class DireccionService {
         
         Direccion dir = repo.findByUsuarioId(currentUser.getId());
         
+        // Corregido: Si no existe el registro, es un error 404 (ResourceNotFoundException)
         if (dir == null) {
-            throw new UnauthorizedOperationException("No se encontró dirección para este usuario");
+            throw new ResourceNotFoundException("No se encontró dirección para este usuario");
         }
 
         return mapToResponse(dir);

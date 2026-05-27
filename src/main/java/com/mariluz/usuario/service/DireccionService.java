@@ -4,7 +4,7 @@ import com.mariluz.usuario.dto.ActualizarDireccionRequest;
 import com.mariluz.usuario.dto.crear_direcion.DireccionRequest;
 import com.mariluz.usuario.dto.crear_direcion.DireccionResponse;
 import com.mariluz.usuario.exception.ResourceNotFoundException;
-import com.mariluz.usuario.exception.UnauthorizedOperationException; // <-- Importamos el error 404
+import com.mariluz.usuario.exception.UnauthorizedOperationException;
 import com.mariluz.usuario.model.Direccion;
 import com.mariluz.usuario.model.User;
 import com.mariluz.usuario.repository.DireccionRepository;
@@ -59,7 +59,7 @@ public class DireccionService {
 
         Direccion dir = repo.findByUsuarioId(currentUser.getId());
 
-        // Corregido: Si no existe el registro, es un error 404 (ResourceNotFoundException)
+        // Si no existe el registro, es un error 404 (ResourceNotFoundException)
         if (dir == null) {
             throw new ResourceNotFoundException(
                 "No se encontró dirección para este usuario"

@@ -46,6 +46,4 @@ public class DireccionController {
     ) {
         return ResponseEntity.ok(service.actualizarDireccion(request));
     }
-
-    // 4. mostrar historial de compras
 }

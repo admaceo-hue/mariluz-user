@@ -1,5 +1,6 @@
 package com.mariluz.usuario.exception;
 
+import com.mariluz.usuario.dto.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,10 +31,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
+                .timeStamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message("Token expirado")
                 .errors(error)
+                .endpoint(request.getRequestURI())
                 .build()
         );
     }
@@ -51,10 +53,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
+                .timeStamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message("Error de token")
                 .errors(error)
+                .endpoint(request.getRequestURI())
                 .build()
         );
     }
@@ -65,14 +68,16 @@ public class GlobalExceptionHandler {
     */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(
-        HttpRequestMethodNotSupportedException ex
+        HttpRequestMethodNotSupportedException ex,
+        HttpServletRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(
             ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.NOT_FOUND.value())
-                .message("Venta no encontrada")
+                .timeStamp(LocalDateTime.now())
+                .status(HttpStatus.METHOD_NOT_ALLOWED.value())
+                .message("Método no soportado")
                 .errors(Map.of("error", ex.getMessage()))
+                .endpoint(request.getRequestURI())
                 .build()
         );
     }
@@ -82,48 +87,54 @@ public class GlobalExceptionHandler {
         ResourceNotFoundException.class,
         EmailNotFoundException.class,
     })
-    public ResponseEntity<ErrorResponse> handleNotFound(RuntimeException ex) {
+    public ResponseEntity<ErrorResponse> handleNotFound(
+        RuntimeException ex,
+        HttpServletRequest request
+    ) {
         return buildErrorResponse(
             HttpStatus.NOT_FOUND,
-            "Not Found",
             ex.getMessage(),
-            null
+            null,
+            request.getRequestURI()
         );
     }
 
-    // Captura el 401 (No autorizado) para permisos o contraseñas malas
+    // Captura el 401 (No autorizado) para permisos
     @ExceptionHandler({
         UnauthorizedOperationException.class,
         InvalidCredentialsException.class,
     })
     public ResponseEntity<ErrorResponse> handleUnauthorized(
-        RuntimeException ex
+        RuntimeException ex,
+        HttpServletRequest request
     ) {
         return buildErrorResponse(
             HttpStatus.UNAUTHORIZED,
-            "Unauthorized",
             ex.getMessage(),
-            null
+            null,
+            request.getRequestURI()
         );
     }
 
     // Captura el 400 (Solicitud Incorrecta) cuando el email está repetido
     @ExceptionHandler(EmailAlreadyInUseException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(
-        EmailAlreadyInUseException ex
+        EmailAlreadyInUseException ex,
+        HttpServletRequest request
     ) {
         return buildErrorResponse(
             HttpStatus.BAD_REQUEST,
-            "Bad Request",
             ex.getMessage(),
-            null
+            null,
+            request.getRequestURI()
         );
     }
 
     // Captura errores de validación de Spring (@Valid en los campos obligatorios)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
-        MethodArgumentNotValidException ex
+        MethodArgumentNotValidException ex,
+        HttpServletRequest request
     ) {
         Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult()
@@ -133,25 +144,25 @@ public class GlobalExceptionHandler {
             });
         return buildErrorResponse(
             HttpStatus.BAD_REQUEST,
-            "Validation Error",
             "Datos inválidos",
-            fieldErrors
+            fieldErrors,
+            request.getRequestURI()
         );
     }
 
     // Método de soporte para armar el JSON estructurado final
     private ResponseEntity<ErrorResponse> buildErrorResponse(
         HttpStatus status,
-        String errorType,
         String message,
-        Map<String, String> errors
+        Map<String, String> errors,
+        String endpoint
     ) {
         ErrorResponse response = ErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
+            .timeStamp(LocalDateTime.now())
             .status(status.value())
-            .error(errorType)
             .message(message)
             .errors(errors)
+            .endpoint(endpoint)
             .build();
 
         return new ResponseEntity<>(response, status);
@@ -170,9 +181,9 @@ public class GlobalExceptionHandler {
 
         return buildErrorResponse(
             HttpStatus.BAD_REQUEST,
-            "Error en la solicitud",
             "Datos inválidos",
-            error
+            error,
+            request.getRequestURI()
         );
     }
 }

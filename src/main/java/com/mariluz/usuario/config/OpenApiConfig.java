@@ -20,11 +20,11 @@ public class OpenApiConfig {
         return new OpenAPI()
             .info(new Info()
                 .title("API Servicio Usuario")
-                .version("v1")
+                .version("1.0")
                 .description("Microservicio de usuarios - Tienda Mariluz")
                 .contact(new Contact()
-                    .name("Equipo Mariluz")
-                    .email("contacto@mariluz.cl")))
+                    .name("Adonys Maceo")
+                    .email("ad.maceo@duocuc.cl")))
 
             .addSecurityItem(new SecurityRequirement().addList(SCHEME))
             .components(

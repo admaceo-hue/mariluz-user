@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/user")
-public class DireccionController {
+public class DireccionController implements DireccionApi {
 
     @Autowired
     private DireccionService service;
 
     // 1. crear direccion usuario
+    @Override
     @PostMapping("/direccion")
     public ResponseEntity<DireccionResponse> agregarDireccion(
         @Valid @RequestBody DireccionRequest request
@@ -33,6 +34,7 @@ public class DireccionController {
     }
 
     // 2. obtener direccion usuario
+    @Override
     @GetMapping("/direccion")
     public ResponseEntity<DireccionResponse> obtenerDireccion() {
         // Devolvemos la respuesta con un estado 200 OK
@@ -40,6 +42,7 @@ public class DireccionController {
     }
 
     // 3. actualizar direccion
+    @Override
     @PutMapping("/direccion")
     public ResponseEntity<DireccionResponse> actualizarDireccion(
         @Valid @RequestBody ActualizarDireccionRequest request
